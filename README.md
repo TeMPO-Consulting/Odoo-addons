@@ -1,2 +1,2 @@
-Odoo-addons-V7
-==============
+Odoo-addons
+===========

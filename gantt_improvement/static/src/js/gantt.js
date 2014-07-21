@@ -65,8 +65,10 @@ openerp.gantt_improvement = function (instance) {
         change_scroll: function(day, absolute) {
             absolute = absolute || false;
             var old_value = $(".openerp .oe_gantt tr td:nth-of-type(2)").scrollLeft();
-            if (absolute)
+            if (absolute) {
                 old_value = 0;
+                day += 1; //Offset in gantt
+            }
             var day_size_px = $(".dayNumber:first").width();
             var px = old_value + (day * day_size_px);
             if (px < 0)

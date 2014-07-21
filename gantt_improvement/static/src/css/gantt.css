@@ -6,6 +6,10 @@
 .openerp .oe_gantt tr td {
     overflow-x: auto;
 }
+.openerp .oe_gantt_buttons_days #gantt_improvement_input_date {
+    height: auto;
+    line-height: normal;
+}
 
 .openerp .oe_gantt_buttons_days {
     width: 100%;

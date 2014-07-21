@@ -9,8 +9,8 @@
                 <button class="oe_button today" type="button">Today</button>
                 <button class="oe_button next_day" type="button">Next day</button>
                 <button class="oe_button next_week" type="button">Next week</button>
-                <!--<input class="oe_button gantt_improvement_input_date" id="gantt_improvement_input_date" type="date" />-->
-                <input class="oe_button gantt_improvement_input_date" id="gantt_improvement_input_date" type="text" />
+                <input class="oe_button gantt_improvement_input_date" id="gantt_improvement_input_date" type="date" />
+                <!--<input class="oe_button gantt_improvement_input_date" id="gantt_improvement_input_date" type="text" />-->
                 <button class="oe_button go_date" type="button">Go</button>
             </div>
             <div t-att-id="widget.chart_id" class="oe_gantt"/>

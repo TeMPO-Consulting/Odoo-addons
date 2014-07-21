@@ -1,6 +1,7 @@
 /*---------------------------------------------------------
  * OpenERP gantt_improvement
  *---------------------------------------------------------*/
+
 openerp.gantt_improvement = function (instance) {
     var _t = instance.web._t,
        _lt = instance.web._lt;
@@ -40,8 +41,7 @@ openerp.gantt_improvement = function (instance) {
                 var ntasks = _.map(tasks, function(task) {
                     return _.extend({__name: _.detect(names, function(name) { return name[0] == task.id; })[1]}, task); 
                 });
-               
-                /************** DIFF **********/
+
                 date_begin = null;
                 date_end = null;
                 day_today = 0;
@@ -58,7 +58,7 @@ openerp.gantt_improvement = function (instance) {
                 date_end = instance.web.auto_str_to_date(date_end);
                 day_end = Math.round((date_end - date_begin)/(1000*60*60*24));
                 day_today = Math.round((new Date() - date_begin)/(1000*60*60*24));
-                /************** ENDDIFF **********/
+
                 return self.on_data_loaded_2(ntasks, group_bys);
             });
         },
@@ -83,13 +83,9 @@ openerp.gantt_improvement = function (instance) {
         },
         today: function() {
             if ($('.taskPanel').length != 0) {
-                $('#gantt_improvement_input_date').datepicker({
-                    showOn: "button",
-                    buttonImage: "/web/static/src/img/ui/field_calendar.png",
-                    buttonImageOnly: true,
-                    dateFormat: "yy-mm-dd"
+                $(".openerp .oe_gantt tr td").scroll(function(event) {
+                    $(".openerp .oe_gantt tr td").scrollTop($(this).scrollTop());
                 });
-                $('#gantt_improvement_input_date').width("100px");
                 this.change_scroll(day_today - day_offset, true);
             } else {
                 var self = this;

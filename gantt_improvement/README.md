@@ -7,6 +7,7 @@ Features :
 
 ## Install
 The plugin was configured for Odoo v7.0.
+
 For Odoo v8.0, you must edit the file __openerp__.py :
 
 **Add comment(#) to this lines :**

@@ -11,7 +11,7 @@ For Odoo v8.0, you must edit the file __openerp__.py :
 
 **Add comment(#) to this lines :**
 * `'js': ['static/src/js/gantt.js'], #Odoo V7.0`
-* 'css': ['static/src/css/gantt.css'], #Odoo V7.0
+* `'css': ['static/src/css/gantt.css'], #Odoo V7.0`
 
 **Remove comment(#) to this line :**
-* #'views/web_gantt.xml', #Odoo V8.0
+* `#'views/web_gantt.xml', #Odoo V8.0`

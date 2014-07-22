@@ -4,6 +4,8 @@ Features :
 * **View** - The gantt graph scrollbar was adapted on the browser size.
 * **Moving** - New buttons for jump a day or a week.
 * **Search** - New input type date for search a day
+* **Customizable** - You can add an offset for the searching day in your users settings
+
 
 ## Install
 The plugin was configured for Odoo v7.0.

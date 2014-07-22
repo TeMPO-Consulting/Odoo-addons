@@ -1,7 +1,7 @@
 /*---------------------------------------------------------
  * OpenERP gantt_improvement
  *---------------------------------------------------------*/
-
+console.log("test");
 openerp.gantt_improvement = function (instance) {
     var _t = instance.web._t,
        _lt = instance.web._lt;
@@ -11,6 +11,8 @@ openerp.gantt_improvement = function (instance) {
     var day_today = 0;
     var day_end = 0;
     var day_offset = 0;
+    var projects = null;
+
     instance.web.views.add('gantt', 'instance.gantt_improvement.GanttView');
     instance.gantt_improvement.GanttView = instance.web_gantt.GanttView.extend({
         events: {
@@ -41,7 +43,6 @@ openerp.gantt_improvement = function (instance) {
                 var ntasks = _.map(tasks, function(task) {
                     return _.extend({__name: _.detect(names, function(name) { return name[0] == task.id; })[1]}, task); 
                 });
-
                 date_begin = null;
                 date_end = null;
                 day_today = 0;
@@ -58,21 +59,21 @@ openerp.gantt_improvement = function (instance) {
                 date_end = instance.web.auto_str_to_date(date_end);
                 day_end = Math.round((date_end - date_begin)/(1000*60*60*24));
                 day_today = Math.round((new Date() - date_begin)/(1000*60*60*24));
-
                 return self.on_data_loaded_2(ntasks, group_bys);
             });
         },
         change_scroll: function(day, absolute) {
             absolute = absolute || false;
-            var old_value = $(".openerp .oe_gantt tr td:nth-of-type(2)").scrollLeft();
+            var old_value = $(".oe_gantt > table > tbody > tr > td:nth-child(2n) > div").scrollLeft();
             if (absolute) {
                 old_value = 0;
             }
+            $(".oe_gantt > table > tbody > tr > td:nth-child(2n) > div").addClass("oe_gantt_overflow");
             var day_size_px = $(".dayNumber:first").width();
             var px = old_value + (day * day_size_px);
             if (px < 0)
                 px = 0;
-            $(".openerp .oe_gantt tr td:nth-of-type(2)").scrollLeft(px);
+            $(".oe_gantt > table > tbody > tr > td:nth-child(2n) > div").scrollLeft(px);
         },
         previous_week: function() {
             this.change_scroll(-7);
@@ -82,8 +83,9 @@ openerp.gantt_improvement = function (instance) {
         },
         today: function() {
             if ($('.taskPanel').length != 0) {
-                $(".openerp .oe_gantt tr td").scroll(function(event) {
-                    $(".openerp .oe_gantt tr td").scrollTop($(this).scrollTop());
+                $(".oe_gantt > table > tbody > tr > td > div").scroll(function(event) {
+                    console.log("scroll");
+                    $(".oe_gantt > table > tbody > tr > td").scrollTop($(this).scrollTop());
                 });
                 this.change_scroll(day_today - day_offset, true);
             } else {

@@ -1,14 +1,19 @@
 .openerp .oe_gantt {
     width: 98%;
-    height: 500px;
 }
 
-.openerp .oe_gantt tr td {
+.oe_gantt_overflow {
     overflow-x: auto;
 }
+
+.openerp .oe_gantt tr td:first-child {
+    overflow-y: hidden;
+}
+
 .openerp .oe_gantt_buttons_days #gantt_improvement_input_date {
     height: auto;
     line-height: normal;
+    padding: 0px;
 }
 
 .openerp .oe_gantt_buttons_days {

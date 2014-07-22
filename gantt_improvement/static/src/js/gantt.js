@@ -1,7 +1,6 @@
 /*---------------------------------------------------------
  * OpenERP gantt_improvement
  *---------------------------------------------------------*/
-console.log("test");
 openerp.gantt_improvement = function (instance) {
     var _t = instance.web._t,
        _lt = instance.web._lt;
@@ -11,7 +10,6 @@ openerp.gantt_improvement = function (instance) {
     var day_today = 0;
     var day_end = 0;
     var day_offset = 0;
-    var projects = null;
 
     instance.web.views.add('gantt', 'instance.gantt_improvement.GanttView');
     instance.gantt_improvement.GanttView = instance.web_gantt.GanttView.extend({
@@ -84,7 +82,6 @@ openerp.gantt_improvement = function (instance) {
         today: function() {
             if ($('.taskPanel').length != 0) {
                 $(".oe_gantt > table > tbody > tr > td > div").scroll(function(event) {
-                    console.log("scroll");
                     $(".oe_gantt > table > tbody > tr > td").scrollTop($(this).scrollTop());
                 });
                 this.change_scroll(day_today - day_offset, true);

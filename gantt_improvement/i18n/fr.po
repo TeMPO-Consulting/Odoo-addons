@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: OpenERP Server 7.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-17 08:14+0000\n"
-"PO-Revision-Date: 2014-07-17 08:14+0000\n"
+"POT-Creation-Date: 2014-07-24 08:21+0000\n"
+"PO-Revision-Date: 2014-07-24 08:21+0000\n"
 "Last-Translator: <>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -23,18 +23,30 @@ msgid "Previous week"
 msgstr "Semaine précédente"
 
 #. module: gantt_improvement
+#: model:ir.model,name:gantt_improvement.model_res_users
+msgid "Users"
+msgstr "Utilisateurs"
+
+#. module: gantt_improvement
 #. openerp-web
 #: code:addons/gantt_improvement/static/src/xml/gantt.xml:12
 #, python-format
 msgid "Next week"
-msgstr "Semaine prochaine"
+msgstr "Semaine suivante"
 
 #. module: gantt_improvement
 #. openerp-web
-#: code:addons/gantt_improvement/static/src/xml/gantt.xml:20
+#: code:addons/gantt_improvement/static/src/xml/gantt.xml:7
 #, python-format
 msgid "Create"
 msgstr "Créer"
+
+#. module: gantt_improvement
+#. openerp-web
+#: code:addons/gantt_improvement/static/src/xml/gantt_config.xml:6
+#, python-format
+msgid "view.users.gantt.config"
+msgstr "view.users.gantt.config"
 
 #. module: gantt_improvement
 #. openerp-web
@@ -42,6 +54,11 @@ msgstr "Créer"
 #, python-format
 msgid "Next day"
 msgstr "Jour suivant"
+
+#. module: gantt_improvement
+#: view:res.users:0
+msgid "Gantt Preferences"
+msgstr "Préférences du Gantt"
 
 #. module: gantt_improvement
 #. openerp-web
@@ -52,17 +69,22 @@ msgstr "Jour précédent"
 
 #. module: gantt_improvement
 #. openerp-web
-#: code:addons/gantt_improvement/static/src/js/gantt-SAVE.js:16
-#, python-format
-msgid "Gantt"
-msgstr "Gantt"
-
-#. module: gantt_improvement
-#. openerp-web
 #: code:addons/gantt_improvement/static/src/xml/gantt.xml:14
 #, python-format
 msgid "Go"
 msgstr "Go"
+
+#. module: gantt_improvement
+#. openerp-web
+#: code:addons/gantt_improvement/static/src/xml/gantt_config.xml:7
+#, python-format
+msgid "res.users"
+msgstr "res.users"
+
+#. module: gantt_improvement
+#: field:res.users,day_offset:0
+msgid "Gant Offset"
+msgstr "Décalage du Gantt en jours"
 
 #. module: gantt_improvement
 #. openerp-web

@@ -10,6 +10,8 @@ openerp.gantt_improvement = function (instance) {
     var day_today = 0;
     var day_end = 0;
     var day_offset = 0;
+    var gantt_tasks = null;
+    var last_move_task = null;
 
     instance.web.views.add('gantt', 'instance.gantt_improvement.GanttView');
     instance.gantt_improvement.GanttView = instance.web_gantt.GanttView.extend({
@@ -21,7 +23,9 @@ openerp.gantt_improvement = function (instance) {
             'click .oe_gantt_buttons_days .next_week': 'next_week',
             'click .oe_gantt_buttons_days .go_date': 'go_date',
             'click .oe_gantt_buttons_days .gantt_improvement_input_date': 'go_date',
+            'click .oe_gantt_button_create' : 'on_task_create',
         },
+
         init: function(parent) {
 
             var self = this;
@@ -34,73 +38,179 @@ openerp.gantt_improvement = function (instance) {
             this.chart_id = _.uniqueId();
             this.today();
         },
-        on_data_loaded: function(tasks, group_bys) {
+        on_data_loaded_2: function(tasks, group_bys) {
+            $(".oe_gantt").html("");
             var self = this;
-            var ids = _.pluck(tasks, "id");
-            return this.dataset.name_get(ids).then(function(names) {
-                var ntasks = _.map(tasks, function(task) {
-                    return _.extend({__name: _.detect(names, function(name) { return name[0] == task.id; })[1]}, task); 
-                });
-                date_begin = null;
-                date_end = null;
-                day_today = 0;
-                day_end = 0;
-                for (var i in ntasks) {
-                    if (ntasks[i].date_end != false && ntasks[i].date_start != false) {
-                        if (date_end == null || date_end < ntasks[i].date_end)
-                             date_end = ntasks[i].date_end;
-                        if (date_begin == null || date_begin > ntasks[i].date_start)
-                            date_begin = ntasks[i].date_start;
+            var projects = [];
+            gantt_tasks = [];
+            date_begin = null;
+            date_end = null;
+            day_today = 0;
+            day_end = 0;  
+
+            for (var i in tasks) {
+                if (tasks[i].date_end != false && tasks[i].date_end != undefined && tasks[i].date_start != false && tasks[i].date_start != undefined) {
+                    gantt_tasks[tasks[i]['id']] = tasks[i];
+                    var tasks_parent_id = i;
+                    var tasks_parent_name = 'task'+i;
+
+                    if (tasks[i][group_bys] != undefined) {
+                        tasks_parent_id = tasks[i][group_bys][0];
                     }
+                    
+                    if (projects[tasks_parent_id] == undefined) {
+                        projects[tasks_parent_id] = [];
+                        projects[tasks_parent_id]['id'] = tasks_parent_id;
+                        projects[tasks_parent_id]['name'] = tasks_parent_name;
+                        projects[tasks_parent_id]['tasks'] = [];
+                        projects[tasks_parent_id]['date_start'] = tasks[i]['date_start'];
+                        projects[tasks_parent_id]['date_end'] = tasks[i]['date_end'];
+                    }
+
+                    projects[tasks_parent_id]['tasks'].push(tasks[i]);
+                    if (projects[tasks_parent_id]['date_start'] < tasks[i]['date_start'])
+                        projects[tasks_parent_id]['date_start'] = tasks[i]['date_start']
+                    if (projects[tasks_parent_id]['date_end'] > tasks[i]['date_end'])
+                        projects[tasks_parent_id]['date_end'] = tasks[i]['date_end']
+                    if (date_end == null || date_end < tasks[i].date_end)
+                         date_end = tasks[i].date_end;
+                    if (date_begin == null || date_begin > tasks[i].date_start)
+                        date_begin = tasks[i].date_start;
                 }
-                date_begin = instance.web.auto_str_to_date(date_begin);
-                date_end = instance.web.auto_str_to_date(date_end);
-                day_end = Math.round((date_end - date_begin)/(1000*60*60*24));
-                day_today = Math.round((new Date() - date_begin)/(1000*60*60*24));
-                return self.on_data_loaded_2(ntasks, group_bys);
+            }
+            date_begin = instance.web.auto_str_to_date(date_begin);
+            date_end = instance.web.auto_str_to_date(date_end);
+            day_end = Math.round((date_end - date_begin)/(1000*60*60*24));
+            day_today = Math.round((new Date() - date_begin)/(1000*60*60*24));
+
+            var data = [];
+            for (var i in projects) {
+                var currentTask = {};
+                currentTask.id = "proj"+projects[i]['id'];
+                currentTask.text = (projects[i]['name']);
+                currentTask.open = true;
+
+                data.push(currentTask);
+
+                for (var x in projects[i]['tasks']) {
+                    var currentTask = {};
+                    currentTask.id = projects[i]['tasks'][x]['id'];
+                    currentTask.text = (projects[i]['tasks'][x]['__name']);
+                    var d1 = instance.web.auto_str_to_date(projects[i]['tasks'][x]['date_start']);
+                    var d2 = instance.web.auto_str_to_date(projects[i]['tasks'][x]['date_end']);
+                    var utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
+                    var utc2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
+                    var duration = Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
+                        duration += 1;
+                    var start = d1.getDate()+'-'+(d1.getMonth() + 1)+"-"+d1.getFullYear();
+                    currentTask.start_date = start;
+                    currentTask.duration = duration;
+                    currentTask.parent = "proj"+projects[i]['id'];
+                    if (projects[i]['tasks'][x]['progress'] != undefined)
+                        currentTask.progress = projects[i]['tasks'][x]['progress'];
+                    data.push(currentTask);
+                }
+            }
+            var tasks = {'data' : data};
+            gantt.config.columns=[
+                {name:"text", label:"Task name", tree:true, },
+            ];
+            gantt.config.details_on_dblclick = false;
+            gantt.config.min_column_width = 28;
+            gantt.config.grid_width = 200;
+            gantt.config.row_height = 20;
+            gantt.config.date_scale = "%d";
+            gantt.config.scale_height = 20*3;
+            gantt.config.drag_links = false;
+            gantt.config.drag_progress = false;
+
+            var weekScaleTemplate = function(date){
+                var dateToStr = gantt.date.date_to_str("%d %M");
+                var weekNum = gantt.date.date_to_str("(week %W)");
+                var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
+                return dateToStr(date) + " - " + dateToStr(endDate) + " " + weekNum(date);
+            };
+            gantt.config.subscales = [
+                {unit:"month", step:1, date:"%F, %Y"},
+                {unit:"week", step:1, template:weekScaleTemplate}
+            ];
+            gantt.templates.scale_cell_class = function(date){
+                if(date.getDay()==0||date.getDay()==6){
+                    return "weekend";
+                }
+            };
+            gantt.templates.task_cell_class = function(item,date){
+                if(date.getDay()==0||date.getDay()==6){
+                    return "weekend"
+                }
+            };
+
+            gantt.init(this.chart_id);
+            gantt.parse(tasks);
+
+            gantt.attachEvent("onTaskClick", function(id, e) {
+                if (gantt_tasks[id] != undefined)
+                    self.on_task_display(gantt_tasks[id]);
+            });
+            gantt.attachEvent("onTaskDrag", function(id, mode, task, original){
+                last_move_task = task;
+            });
+            gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
+                self.on_task_changed();
             });
         },
-        change_scroll: function(day, absolute) {
-            absolute = absolute || false;
-            var old_value = $(".oe_gantt > table > tbody > tr > td:nth-child(2n) > div").scrollLeft();
-            if (absolute) {
-                old_value = 0;
-            }
-            $(".oe_gantt > table > tbody > tr > td:nth-child(2n) > div").addClass("oe_gantt_overflow");
-            var day_size_px = $(".dayNumber:first").width();
-            var px = old_value + (day * day_size_px);
-            if (px < 0)
-                px = 0;
-            $(".oe_gantt > table > tbody > tr > td:nth-child(2n) > div").scrollLeft(px);
-        },
         previous_week: function() {
-            this.change_scroll(-7);
+            this.scroll_for(-7);
         },
         previous_day: function() {
-            this.change_scroll(-1);
+            this.scroll_for(-1);
         },
         today: function() {
-            if ($('.taskPanel').length != 0) {
-                $(".oe_gantt > table > tbody > tr > td > div").scroll(function(event) {
-                    $(".oe_gantt > table > tbody > tr > td").scrollTop($(this).scrollTop());
-                });
-                this.change_scroll(day_today - day_offset, true);
+            if ($('.gantt_container').length != 0) {
+                this.go_to_date(new Date());
             } else {
                 var self = this;
                 setTimeout(function(){self.today();}, 300);
             }
             
         },
+        scroll_for: function(nb_day) {
+            gantt.scrollTo(gantt.getScrollState().x + (nb_day * gantt.config.min_column_width));
+        },
+        go_to_date: function(date) {
+            var date_offset = new Date();
+            date_offset.setTime(date.getTime() - (day_offset * 24 * 3600 * 1000));
+            gantt.showDate(date_offset);
+        },
         go_date: function() {
-            var date_input = instance.web.auto_str_to_date($("#gantt_improvement_input_date").val());
-            var day_input = Math.round((date_input - date_begin)/(1000*60*60*24));
-            this.change_scroll(day_input - day_offset, true);
+            var date_input = $("#gantt_improvement_input_date").val();
+            if (date_input != '') {
+                var date = instance.web.auto_str_to_date(date_input);
+                this.go_to_date(new Date(date));
+            }
         },
         next_day: function() {
-            this.change_scroll(1);
+            this.scroll_for(1);
         },
         next_week: function() {
-            this.change_scroll(7);
+            this.scroll_for(7);
+        },
+        on_task_changed: function() {
+            var self = this;
+            var itask = gantt_tasks[last_move_task['id']];
+            var start = last_move_task['start_date'];
+            var duration = last_move_task['duration'] * 24;
+            var end = start.clone().addMilliseconds(duration * 60 * 60 * 1000);
+            var data = {};
+            data[self.fields_view.arch.attrs.date_start] =
+                instance.web.auto_date_to_str(start, self.fields[self.fields_view.arch.attrs.date_start].type);
+            if (self.fields_view.arch.attrs.date_stop) {
+                data[self.fields_view.arch.attrs.date_stop] = 
+                    instance.web.auto_date_to_str(end, self.fields[self.fields_view.arch.attrs.date_stop].type);
+            } else { // we assume date_duration is defined
+                data[self.fields_view.arch.attrs.date_delay] = duration;
+            }
+            this.dataset.write(itask.id, data);
         },
     });
 };

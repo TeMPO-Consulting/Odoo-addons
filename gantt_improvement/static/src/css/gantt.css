@@ -1,13 +1,12 @@
-.openerp .oe_gantt {
-    width: 98%;
+.gantt_task_line.gantt_dependent_task {
+    background-color: #65c16f;
+    border: 1px solid #3c9445;
 }
-
-.oe_gantt_overflow {
-    overflow-x: auto;
+.weekend{
+    background: #EFF5FD;
 }
-
-.openerp .oe_gantt tr td:first-child {
-    overflow-y: hidden;
+.gantt_selected .weekend{
+    background: #EFF5FD;
 }
 
 .openerp .oe_gantt_buttons_days #gantt_improvement_input_date {

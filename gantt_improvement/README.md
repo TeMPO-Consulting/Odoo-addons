@@ -19,3 +19,7 @@ For run it with Odoo v8.0, you must edit the file **\__openerp__.py** :
 **Remove comment(#) to this line :**
 
 * `#'views/web_gantt.xml', #Odoo V8.0`
+
+##Screenshot :
+
+![Screen1](/content/screen1.png)

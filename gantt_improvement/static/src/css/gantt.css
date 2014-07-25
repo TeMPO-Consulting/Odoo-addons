@@ -9,6 +9,16 @@
     background: #EFF5FD;
 }
 
+.gantt_task_link.constraint .gantt_line_wrapper div{
+    background-color: #dd5640;
+}
+.gantt_task_link.constraint:hover .gantt_line_wrapper div{
+    box-shadow: 0 0 5px 0px #dd5640;
+}
+.gantt_task_link.constraint .gantt_link_arrow_right{
+    border-left-color: #dd5640;
+}
+    
 .openerp .oe_gantt_buttons_days #gantt_improvement_input_date {
     height: auto;
     line-height: normal;

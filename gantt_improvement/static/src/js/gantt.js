@@ -12,8 +12,8 @@ openerp.gantt_improvement = function (instance) {
     var day_offset = 0;
     var gantt_tasks = null;
     var last_move_task = null;
-    var database_tasks = null;
     var gantt_loaded = false;
+
     instance.web.views.add('gantt', 'instance.gantt_improvement.GanttView');
     instance.gantt_improvement.GanttView = instance.web_gantt.GanttView.extend({
         events: {
@@ -104,6 +104,7 @@ openerp.gantt_improvement = function (instance) {
             day_today = Math.round((new Date() - date_begin)/(1000*60*60*24));
 
             var data = [];
+            var links = [];
             for (var i in projects) {
                 var currentTask = {};
                 currentTask.id = "proj"+projects[i]['id'];
@@ -113,6 +114,23 @@ openerp.gantt_improvement = function (instance) {
                 data.push(currentTask);
 
                 for (var x in projects[i]['tasks']) {
+                    links.push({
+                        'id': projects[i]['tasks'][x]['id'],
+                        'source': ("proj"+projects[i]['id']),
+                        'target': projects[i]['tasks'][x]['id'],
+                        'type': 1,
+                    });
+                    if (projects[i]['tasks'][x]['next_phase_ids'] != undefined) {
+                        if (projects[i]['tasks'][x]['next_phase_ids'][0] != undefined) {
+                            links.push({
+                                'id': projects[i]['tasks'][x]['id']+"next",
+                                'source': projects[i]['tasks'][x]['id'],
+                                'target': projects[i]['tasks'][x]['next_phase_ids'][0],
+                                'type': 0,
+                            });
+                        }
+                    }
+
                     var currentTask = {};
                     currentTask.id = projects[i]['tasks'][x]['id'];
                     currentTask.text = (projects[i]['tasks'][x]['name']);
@@ -132,7 +150,7 @@ openerp.gantt_improvement = function (instance) {
                     data.push(currentTask);
                 }
             }
-            var tasks = {'data' : data};
+            var tasks = {'data' : data, 'links' : links};
 
             if (gantt_loaded)
                 gantt.clearAll();
@@ -170,6 +188,14 @@ openerp.gantt_improvement = function (instance) {
                         return "weekend"
                     }
                 };
+                gantt.templates.link_class = function(link){
+                    var types = gantt.config.links;
+                    switch (link.type){
+                        case 0:
+                            return "constraint";
+                            break;
+                    }
+                };
                 gantt.attachEvent("onTaskClick", function(id, e) {
                     if (gantt_tasks[id] != undefined)
                         self.on_task_display(gantt_tasks[id]);
@@ -182,7 +208,6 @@ openerp.gantt_improvement = function (instance) {
                 });
             }
             gantt_loaded = true;
-
             gantt.init(this.chart_id);
             gantt.parse(tasks);
         },
@@ -206,7 +231,7 @@ openerp.gantt_improvement = function (instance) {
         },
         go_to_date: function(date) {
             var date_offset = new Date();
-            date_offset.setTime(date.getTime() - (day_offset * 24 * 3600 * 1000));
+            date_offset.setTime(date.getTime() - ((day_offset - 3) * 24 * 3600 * 1000));
             gantt.showDate(date_offset);
         },
         go_date: function() {

@@ -12,5 +12,11 @@ class gantt_improvement(osv.osv):
         return res
 
     _columns = {
-        'day_offset': fields.integer('Gant Offset'),
+        'gantt_improvement_day_offset': fields.integer('Gant Offset'),
+        'gantt_improvement_links_projects': fields.boolean('Links between projects and tasks'),
+        'gantt_improvement_links_contraint': fields.boolean('Links between two tasks (Long term projects)'),
+    }
+    _defaults = {
+        'gantt_improvement_links_projects': True,
+        'gantt_improvement_links_contraint': True,
     }

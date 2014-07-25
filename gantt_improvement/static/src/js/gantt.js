@@ -3,16 +3,18 @@
  *---------------------------------------------------------*/
 openerp.gantt_improvement = function (instance) {
     var _t = instance.web._t,
-       _lt = instance.web._lt;
-    var QWeb = instance.web.qweb;
-    var date_begin = null;
-    var date_end = null;
-    var day_today = 0;
-    var day_end = 0;
-    var day_offset = 0;
-    var gantt_tasks = null;
-    var last_move_task = null;
-    var gantt_loaded = false;
+        _lt = instance.web._lt,
+        QWeb = instance.web.qweb,
+        date_begin = null,
+        date_end = null,
+        day_today = 0,
+        day_end = 0,
+        day_offset = null,
+        gantt_tasks = null,
+        last_move_task = null,
+        gantt_loaded = false,
+        put_project_links = true,
+        put_contraint_links = true;
 
     instance.web.views.add('gantt', 'instance.gantt_improvement.GanttView');
     instance.gantt_improvement.GanttView = instance.web_gantt.GanttView.extend({
@@ -27,11 +29,13 @@ openerp.gantt_improvement = function (instance) {
             'click .oe_gantt_button_create' : 'on_task_create',
         },
 
-        init: function(parent) {
+        init: function (parent) {
 
             var self = this;
-            new instance.web.Model("res.users").query(["day_offset"]).first().then(function(result) {
-                day_offset = result.day_offset;
+            new instance.web.Model("res.users").query(["gantt_improvement_day_offset", "gantt_improvement_links_contraint", "gantt_improvement_links_projects"]).first().then(function (result) {
+                day_offset = result.gantt_improvement_day_offset;
+                put_contraint_links = result.gantt_improvement_links_contraint;
+                put_project_links = result.gantt_improvement_links_projects;
             });
 
             this._super.apply(this, arguments);
@@ -39,7 +43,7 @@ openerp.gantt_improvement = function (instance) {
             this.chart_id = _.uniqueId();
             this.today();
         },
-        load_gantt: function(fields_view_get, fields_get) {
+        load_gantt: function (fields_view_get, fields_get) {
             var self = this;
             this.fields_view = fields_view_get;
             this.$el.addClass(this.fields_view.arch.attrs['class']);
@@ -51,13 +55,13 @@ openerp.gantt_improvement = function (instance) {
             });
 
         },
-        on_data_loaded_2: function(tasks, group_bys) {
+        on_data_loaded_2: function (tasks, group_bys) {
             var self = this;
-            var model = new instance.web.Model(this.dataset.model).query().all().then(function(result) {
+            var model = new instance.web.Model(this.dataset.model).query().all().then(function (result) {
                 self.on_data_loaded_3(result, group_bys);
             });
         },
-        on_data_loaded_3: function(tasks, group_bys) {
+        on_data_loaded_3: function (tasks, group_bys) {
             $(".oe_gantt").html("");
             var self = this;
             var projects = [];
@@ -68,33 +72,33 @@ openerp.gantt_improvement = function (instance) {
             day_end = 0;  
 
             for (var i in tasks) {
-                if (tasks[i].date_end != false && tasks[i].date_end != undefined && tasks[i].date_start != false && tasks[i].date_start != undefined) {
-                    gantt_tasks[tasks[i]['id']] = tasks[i];
+                if (tasks[i].date_end !== false && tasks[i].date_end !== undefined && tasks[i].date_start !== false && tasks[i].date_start !== undefined) {
+                    gantt_tasks[tasks[i].id] = tasks[i];
                     var tasks_parent_id = i;
                     var tasks_parent_name = 'task'+i;
 
-                    if (tasks[i][group_bys] != undefined) {
+                    if (tasks[i][group_bys] !== undefined) {
                         tasks_parent_id = tasks[i][group_bys][0];
                         tasks_parent_name = tasks[i][group_bys][1];
                     }
                     
-                    if (projects[tasks_parent_id] == undefined) {
+                    if (projects[tasks_parent_id] === undefined) {
                         projects[tasks_parent_id] = [];
-                        projects[tasks_parent_id]['id'] = tasks_parent_id;
-                        projects[tasks_parent_id]['name'] = tasks_parent_name;
-                        projects[tasks_parent_id]['tasks'] = [];
-                        projects[tasks_parent_id]['date_start'] = tasks[i]['date_start'];
-                        projects[tasks_parent_id]['date_end'] = tasks[i]['date_end'];
+                        projects[tasks_parent_id].id = tasks_parent_id;
+                        projects[tasks_parent_id].name = tasks_parent_name;
+                        projects[tasks_parent_id].tasks = [];
+                        projects[tasks_parent_id].date_start = tasks[i].date_start;
+                        projects[tasks_parent_id].date_end = tasks[i].date_end;
                     }
 
-                    projects[tasks_parent_id]['tasks'].push(tasks[i]);
-                    if (projects[tasks_parent_id]['date_start'] < tasks[i]['date_start'])
-                        projects[tasks_parent_id]['date_start'] = tasks[i]['date_start']
-                    if (projects[tasks_parent_id]['date_end'] > tasks[i]['date_end'])
-                        projects[tasks_parent_id]['date_end'] = tasks[i]['date_end']
-                    if (date_end == null || date_end < tasks[i].date_end)
+                    projects[tasks_parent_id].tasks.push(tasks[i]);
+                    if (projects[tasks_parent_id].date_start < tasks[i].date_start)
+                        projects[tasks_parent_id].date_start = tasks[i].date_start;
+                    if (projects[tasks_parent_id].date_end > tasks[i].date_end)
+                        projects[tasks_parent_id].date_end = tasks[i].date_end;
+                    if (date_end === null || date_end < tasks[i].date_end)
                          date_end = tasks[i].date_end;
-                    if (date_begin == null || date_begin > tasks[i].date_start)
+                    if (date_begin === null || date_begin > tasks[i].date_start)
                         date_begin = tasks[i].date_start;
                 }
             }
@@ -105,37 +109,40 @@ openerp.gantt_improvement = function (instance) {
 
             var data = [];
             var links = [];
-            for (var i in projects) {
-                var currentTask = {};
-                currentTask.id = "proj"+projects[i]['id'];
-                currentTask.text = (projects[i]['name']);
-                currentTask.open = true;
+            for (var y in projects) {
+                var currentProjectTask = {};
+                currentProjectTask.id = "proj"+projects[y].id;
+                currentProjectTask.text = (projects[y].name);
+                currentProjectTask.open = true;
+                data.push(currentProjectTask);
 
-                data.push(currentTask);
-
-                for (var x in projects[i]['tasks']) {
-                    links.push({
-                        'id': projects[i]['tasks'][x]['id'],
-                        'source': ("proj"+projects[i]['id']),
-                        'target': projects[i]['tasks'][x]['id'],
-                        'type': 1,
-                    });
-                    if (projects[i]['tasks'][x]['next_phase_ids'] != undefined) {
-                        if (projects[i]['tasks'][x]['next_phase_ids'][0] != undefined) {
-                            links.push({
-                                'id': projects[i]['tasks'][x]['id']+"next",
-                                'source': projects[i]['tasks'][x]['id'],
-                                'target': projects[i]['tasks'][x]['next_phase_ids'][0],
-                                'type': 0,
-                            });
+                for (var x in projects[y].tasks) {
+                    if (put_project_links === true) {
+                        links.push({
+                            'id': projects[y].tasks[x].id,
+                            'source': ("proj"+projects[y].id),
+                            'target': projects[y].tasks[x].id,
+                            'type': 1,
+                        });
+                    }
+                    if (put_contraint_links === true) {
+                        if (projects[y].tasks[x].next_phase_ids !== undefined) {
+                            if (projects[y].tasks[x].next_phase_ids[0] !== undefined) {
+                                links.push({
+                                    'id': projects[y].tasks[x].id+"next",
+                                    'source': projects[y].tasks[x].id,
+                                    'target': projects[y].tasks[x].next_phase_ids[0],
+                                    'type': 0,
+                                });
+                            }
                         }
                     }
 
                     var currentTask = {};
-                    currentTask.id = projects[i]['tasks'][x]['id'];
-                    currentTask.text = (projects[i]['tasks'][x]['name']);
-                    var d1 = instance.web.auto_str_to_date(projects[i]['tasks'][x]['date_start']);
-                    var d2 = instance.web.auto_str_to_date(projects[i]['tasks'][x]['date_end']);
+                    currentTask.id = projects[y].tasks[x].id;
+                    currentTask.text = (projects[y].tasks[x].name);
+                    var d1 = instance.web.auto_str_to_date(projects[y].tasks[x].date_start);
+                    var d2 = instance.web.auto_str_to_date(projects[y].tasks[x].date_end);
                     var utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
                     var utc2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
                     var duration = Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
@@ -143,14 +150,14 @@ openerp.gantt_improvement = function (instance) {
                     var start = d1.getDate()+'-'+(d1.getMonth() + 1)+"-"+d1.getFullYear();
                     currentTask.start_date = start;
                     currentTask.duration = duration;
-                    currentTask.order = projects[i]['tasks'][x]['sequence'];
-                    currentTask.parent = "proj"+projects[i]['id'];
-                    if (projects[i]['tasks'][x]['progress'] != undefined)
-                        currentTask.progress = projects[i]['tasks'][x]['progress'];
+                    currentTask.order = projects[y].tasks[x].sequence;
+                    currentTask.parent = "proj"+projects[y].id;
+                    if (projects[y].tasks[x].progress !== undefined)
+                        currentTask.progress = projects[y].tasks[x].progress;
                     data.push(currentTask);
                 }
             }
-            var tasks = {'data' : data, 'links' : links};
+            var datas_tasks = {'data' : data, 'links' : links};
 
             if (gantt_loaded)
                 gantt.clearAll();
@@ -167,7 +174,7 @@ openerp.gantt_improvement = function (instance) {
             gantt.config.drag_links = false;
             gantt.config.drag_progress = false;
 
-            var weekScaleTemplate = function(date){
+            var weekScaleTemplate = function (date){
                 var dateToStr = gantt.date.date_to_str("%d %M");
                 var weekNum = gantt.date.date_to_str("(week %W)");
                 var endDate = gantt.date.add(gantt.date.add(date, 1, "week"), -1, "day");
@@ -177,81 +184,79 @@ openerp.gantt_improvement = function (instance) {
                 {unit:"month", step:1, date:"%F, %Y"},
                 {unit:"week", step:1, template:weekScaleTemplate}
             ];
-            if (gantt_loaded == false) {
-                gantt.templates.scale_cell_class = function(date){
-                    if(date.getDay()==0||date.getDay()==6){
+            if (gantt_loaded === false) {
+                gantt.templates.scale_cell_class = function (date){
+                    if(date.getDay() === 0||date.getDay() === 6){
                         return "weekend";
                     }
                 };
-                gantt.templates.task_cell_class = function(item,date){
-                    if(date.getDay()==0||date.getDay()==6){
-                        return "weekend"
+                gantt.templates.task_cell_class = function (item,date){
+                    if(date.getDay()===0||date.getDay()===6){
+                        return "weekend";
                     }
                 };
-                gantt.templates.link_class = function(link){
-                    var types = gantt.config.links;
+                gantt.templates.link_class = function (link){
                     switch (link.type){
                         case 0:
                             return "constraint";
-                            break;
                     }
                 };
-                gantt.attachEvent("onTaskClick", function(id, e) {
-                    if (gantt_tasks[id] != undefined)
+                gantt.attachEvent("onTaskClick", function (id, e) {
+                    if (gantt_tasks[id] !== undefined)
                         self.on_task_display(gantt_tasks[id]);
                 });
-                gantt.attachEvent("onTaskDrag", function(id, mode, task, original){
+                gantt.attachEvent("onTaskDrag", function (id, mode, task, original){
                     last_move_task = task;
                 });
-                gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
+                gantt.attachEvent("onAfterTaskDrag", function (id, mode, e){
                     self.on_task_changed();
                 });
             }
             gantt_loaded = true;
             gantt.init(this.chart_id);
-            gantt.parse(tasks);
+            gantt.parse(datas_tasks);
         },
-        previous_week: function() {
+        previous_week: function () {
             this.scroll_for(-7);
         },
-        previous_day: function() {
+        previous_day: function () {
             this.scroll_for(-1);
         },
-        today: function() {
-            if ($('.gantt_container').length != 0) {
+        today: function () {
+            if ($('.gantt_container').length !== 0 && day_offset !== null) {
                 this.go_to_date(new Date());
             } else {
                 var self = this;
-                setTimeout(function(){self.today();}, 300);
+                setTimeout(function (){self.today();}, 300);
             }
             
         },
-        scroll_for: function(nb_day) {
+        scroll_for: function (nb_day) {
             gantt.scrollTo(gantt.getScrollState().x + (nb_day * gantt.config.min_column_width));
         },
-        go_to_date: function(date) {
+        go_to_date: function (date) {
             var date_offset = new Date();
             date_offset.setTime(date.getTime() - ((day_offset - 3) * 24 * 3600 * 1000));
             gantt.showDate(date_offset);
         },
-        go_date: function() {
+        go_date: function () {
             var date_input = $("#gantt_improvement_input_date").val();
-            if (date_input != '') {
+            if (date_input !== '') {
                 var date = instance.web.auto_str_to_date(date_input);
                 this.go_to_date(new Date(date));
             }
         },
-        next_day: function() {
+        next_day: function () {
             this.scroll_for(1);
         },
-        next_week: function() {
+        next_week: function () {
             this.scroll_for(7);
         },
-        on_task_changed: function() {
+        on_task_changed: function () {
             var self = this;
-            var itask = gantt_tasks[last_move_task['id']];
-            var start = last_move_task['start_date'];
-            var duration = last_move_task['duration'] * 24;
+            var itask = gantt_tasks[last_move_task.id];
+            var start = last_move_task.start_date;
+            var duration = last_move_task.duration * 24;
             var end = start.clone().addMilliseconds(duration * 60 * 60 * 1000);
             var data = {};
             data[self.fields_view.arch.attrs.date_start] =

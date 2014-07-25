@@ -9,7 +9,9 @@
         <field name="arch" type="xml">
             <xpath expr="//group[@name='preferences']" position="after">
                 <group string="Gantt Preferences">
-                    <field name="day_offset" readonly="0"/>
+                    <field name="gantt_improvement_day_offset" readonly="0"/>
+                    <field name="gantt_improvement_links_projects" readonly="0"/>
+                    <field name="gantt_improvement_links_contraint" readonly="0"/>
                 </group>
             </xpath>
         </field>

@@ -1,4 +1,4 @@
-#odoo-addons
+#Odoo Addons
 
 ## Gantt Improvement
 * - New version of dhtmlxGantt.

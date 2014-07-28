@@ -57,6 +57,7 @@ openerp.gantt_improvement = function (instance) {
         },
         on_data_loaded_2: function (tasks, group_bys) {
             var self = this;
+
             var model = new instance.web.Model(this.dataset.model).query().all().then(function (result) {
                 self.on_data_loaded_3(result, group_bys);
             });
@@ -72,12 +73,18 @@ openerp.gantt_improvement = function (instance) {
             day_end = 0;  
 
             for (var i in tasks) {
-                if (tasks[i].date_end !== false && tasks[i].date_end !== undefined && tasks[i].date_start !== false && tasks[i].date_start !== undefined) {
+                if (tasks[i].date_start !== false && tasks[i].date_start !== undefined) {
+                    if (tasks[i].date_end === false || tasks[i].date_end === undefined)
+                        tasks[i].date_end = tasks[i].date_start;
                     gantt_tasks[tasks[i].id] = tasks[i];
                     var tasks_parent_id = i;
                     var tasks_parent_name = 'task'+i;
 
-                    if (tasks[i][group_bys] !== undefined) {
+                    if (group_bys[0] === '' || group_bys[0] === undefined) {
+                        tasks_parent_id = 0;
+                        tasks_parent_name = 'Gantt View';
+                    }
+                    else if (tasks[i][group_bys[0]] !== undefined) {
                         tasks_parent_id = tasks[i][group_bys][0];
                         tasks_parent_name = tasks[i][group_bys][1];
                     }

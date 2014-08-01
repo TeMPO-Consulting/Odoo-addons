@@ -1,4 +1,4 @@
-from openerp.osv import fields, osv
+"""from openerp.osv import fields, osv
 
 class gantt_improvement(osv.osv):
     _inherit = 'res.users'
@@ -20,3 +20,4 @@ class gantt_improvement(osv.osv):
         'gantt_improvement_links_projects': True,
         'gantt_improvement_links_contraint': True,
     }
+"""

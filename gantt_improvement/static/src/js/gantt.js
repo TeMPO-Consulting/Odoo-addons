@@ -248,7 +248,7 @@ openerp.gantt_improvement = function (instance) {
                         var end = instance.web.auto_str_to_date(item[self.attrs.date_stop]);
                         data.end_date = end.getDate()+'-'+(end.getMonth() + 1)+"-"+end.getFullYear();
                     } else if (self.attrs.date_delay !== undefined){
-                        data.duration = item[self.attrs.date_delay];
+                        data.duration = (item[self.attrs.date_delay] > 0) ? item[self.attrs.date_delay] : 0.1;
                     } else {
                         console.error('Error L126');
                     }

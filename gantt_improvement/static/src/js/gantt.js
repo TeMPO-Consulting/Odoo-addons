@@ -52,7 +52,8 @@ openerp.gantt_improvement = function (instance) {
                 label = self.attrs.string;
             gantt.config.columns = [{name:"text", label:label, tree:true}];
 
-            self.date_length = Math.round(($("#gantt_improvement_length").val() - 1) / 2);
+            //self.date_length = Math.round(($("#gantt_improvement_length").val() - 1) / 2);
+            self.date_length = $("#gantt_improvement_length").val() - 1;
             self.get_select_dates();
             $("#gantt_improvement_date").val(self.date_to_str(self.date_midl));
 
@@ -111,25 +112,25 @@ openerp.gantt_improvement = function (instance) {
             if (this.view_level === 1) {
                 gantt.config.date_scale = "%M";
                 gantt.config.scale_unit = "month";
-                d1 = new Date(date_midl.getFullYear() - length, 0, 1);
+                d1 = new Date(date_midl.getFullYear(), 0, 1);
                 d2 = new Date(date_midl.getFullYear() + length + 1, 0, 1);
                 $('#gantt_improvement_unit').html($('#gantt_improvement_unit_year').attr('placeholder'));
             } else if (this.view_level === 2) {
                 gantt.config.date_scale = "%d/%m";
                 gantt.config.scale_unit = "day";
-                d1 = new Date(date_midl.getFullYear(), date_midl.getMonth() - length, 1);
+                d1 = new Date(date_midl.getFullYear(), date_midl.getMonth(), 1);
                 d2 = new Date(date_midl.getFullYear(), date_midl.getMonth() + length + 1, 1);
                 $('#gantt_improvement_unit').html($('#gantt_improvement_unit_month').attr('placeholder'));
             } else if (this.view_level === 3) {
                 gantt.config.date_scale = "%d/%m";
                 gantt.config.scale_unit = "day";
-                d1 = new Date(date_midl.getFullYear(), date_midl.getMonth(), date_midl.getDate() - (length * 7));
+                d1 = new Date(date_midl.getFullYear(), date_midl.getMonth(), date_midl.getDate());
                 d2 = new Date(date_midl.getFullYear(), date_midl.getMonth(), date_midl.getDate() + (length * 7) + 7);
                 $('#gantt_improvement_unit').html($('#gantt_improvement_unit_week').attr('placeholder'));
             } else {
                 gantt.config.date_scale = "%H:00";
                 gantt.config.scale_unit = "hour";
-                d1 = new Date(date_midl.getFullYear(), date_midl.getMonth(), date_midl.getDate() - length);
+                d1 = new Date(date_midl.getFullYear(), date_midl.getMonth(), date_midl.getDate());
                 d2 = new Date(date_midl.getFullYear(), date_midl.getMonth(), date_midl.getDate() + length + 1);
                 $('#gantt_improvement_unit').html($('#gantt_improvement_unit_day').attr('placeholder'));
             }
@@ -173,9 +174,6 @@ openerp.gantt_improvement = function (instance) {
                     (self.attrs.date_start + self.attrs.date_delay) > self.date_start)
                 */
                 filter = [
-                    /*'&',
-                        [self.attrs.date_start, '>=', self.date_start],
-                        [self.attrs.date_start, '<=', self.date_end],*/
                 ];
             }
             if (domains.length > 0)

@@ -1,9 +1,14 @@
 #Gantt Improvement
 Features :
 
+## Gantt Improvement
 * - New version of dhtmlxGantt.
-* - Zoom on year, month, week and day
-* - Look 1,3,5,... years,months,...
+* - The gantt graph scrollbar was adapted on the browser size.
+* - New buttons for jump a day or a week.
+* - New input type date for search a day.
+* - An offset option available in the user options.
+* - Link between tasks in gantt (project to tasks).
+* - Link between next tasks in gantt (exemple: Long term project in V7)
 
 
 ##Install
